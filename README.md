@@ -1,34 +1,53 @@
-# USC Network Projects Portal
+# USC As-Built Workspace
 
-GitHub Pages site for University of South Carolina network infrastructure projects, managed by Telcom Inc.
+Static prototype for a Telcom Inc closeout portal used to produce low-voltage AS BUILT and project closing documents.
 
-## Setup
+## Current Prototype
 
-1. Create a new GitHub repository (e.g. `usc-network-projects`)
-2. Upload ALL files in this folder to the repository root
-3. Go to **Settings → Pages → Branch: main → / (root)** and save
-4. Your site will be live at `https://yourusername.github.io/usc-network-projects/`
-5. To use a custom domain, add it in Settings → Pages → Custom Domain
+- Plain HTML/CSS/JavaScript deployable to GitHub Pages or Cloudflare Pages.
+- Project intake form with CSV device-list import.
+- Client-specific column picker for device schedules.
+- Building plan image upload preview.
+- Assisted automatic symbol placement workflow mockup.
+- Packet manifest export for AS BUILT package generation.
+- Existing Strom Thurmond interactive floor map retained as `strom_thurmond_map.html`.
+
+## Important Security Note
+
+This repository used to include client-side usernames and passwords. Those were removed because static-site credentials are visible to anyone who can load or inspect the site source.
+
+Before client data, plans, test results, serial numbers, MAC addresses, warranty documents, or generated packets are uploaded, protect the deployment with Cloudflare Access or a real backend authentication layer.
+
+## Cloudflare Pages Deployment
+
+Recommended first deployment:
+
+1. Cloudflare dashboard -> Workers & Pages -> Create application -> Pages -> Connect to Git.
+2. Select `TelcomInc/USC-network-projects`.
+3. Production branch: `main`.
+4. Build command: leave blank.
+5. Build output directory: `/`.
+6. Add a Cloudflare Access application in front of the Pages hostname.
+
+The included `_headers` file adds baseline browser security headers for Cloudflare Pages.
+
+## Production Architecture Target
+
+The finished product should move project data out of browser storage and into durable backend services:
+
+- Cloudflare Pages: frontend app.
+- Cloudflare Access: user/client authentication.
+- Cloudflare Workers: API, imports, packet generation coordination.
+- Cloudflare D1 or external SQL: clients, projects, devices, templates, packet runs, approvals.
+- Cloudflare R2: plans, workbooks, cable test files, warranty documents, generated packets.
+- Queue or processing service: PDF rasterization, OCR, legend extraction, symbol matching, and packet rendering.
+
+See `docs/cloudflare-migration.md` for the implementation path.
 
 ## Files
 
-- `index.html` – Login portal + project dashboard
-- `strom_thurmond_map.html` – Strom Thurmond interactive floor map (copy from outputs folder)
-- `_config.yml` – GitHub Pages config (disables Jekyll)
-
-## Credentials
-
-Default logins (edit in `index.html` under the `USERS` object):
-- `ryan` / `telcom2025`
-- `admin` / `usc2025`
-
-> Note: These are client-side only credentials suitable for a private/internal tool.
-> For higher security, add GitHub's built-in repository access controls.
-
-## Adding Future Projects
-
-1. Add the new project's HTML file to the repo
-2. Add a new entry to the `USERS` object in `index.html` if needed  
-3. Add a new project card in `index.html` (copy the Strom Thurmond card block)
-4. Update the stats row numbers
-
+- `index.html` - Main workspace prototype.
+- `strom_thurmond_map.html` - Existing interactive floor map.
+- `_headers` - Cloudflare Pages security headers.
+- `_config.yml` - GitHub Pages compatibility config.
+- `docs/cloudflare-migration.md` - migration and product architecture notes.

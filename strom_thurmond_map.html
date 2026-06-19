@@ -11,6 +11,8 @@ body{background:#000;color:#fff;font-family:'Helvetica Neue',Helvetica,Arial,san
 .header-logo{font-size:1.05rem;font-weight:700;color:#fff;white-space:nowrap;}
 .header-logo small{font-weight:400;font-size:0.75rem;opacity:0.8;margin-left:8px;}
 .header-controls{margin-left:auto;display:flex;align-items:center;gap:6px;}
+.nav-btn{padding:5px 10px;border-radius:3px;font-size:0.76rem;font-weight:700;cursor:pointer;border:1px solid rgba(255,255,255,0.35);background:rgba(0,0,0,0.18);color:#fff;text-decoration:none;white-space:nowrap;}
+.nav-btn:hover{background:rgba(255,255,255,0.18);}
 .hbtn{padding:5px 12px;border-radius:3px;font-size:0.78rem;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,0.35);background:transparent;color:#fff;transition:all .15s;white-space:nowrap;}
 .hbtn:hover{background:rgba(255,255,255,0.18);}
 .hbtn.active{background:#fff;color:var(--garnet);}
@@ -45,13 +47,20 @@ body{background:#000;color:#fff;font-family:'Helvetica Neue',Helvetica,Arial,san
 .floors-container{display:flex;flex-direction:column;gap:28px;padding:18px;transform-origin:top left;}
 .floor-section{background:#000;}
 .floor-heading{font-size:0.82rem;font-weight:700;color:var(--garnet);text-transform:uppercase;letter-spacing:.08em;border-bottom:2px solid var(--garnet);padding-bottom:6px;margin-bottom:10px;}
-.floor-plan-wrap{position:relative;display:inline-block;cursor:crosshair;}
+.floor-plan-wrap{position:relative;display:inline-block;cursor:default;}
+.floor-plan-wrap.adding{cursor:crosshair;}
 .floor-plan-wrap img{display:block;border:1px solid #333;background:#fff;}
 .ap-marker{position:absolute;width:22px;height:22px;border-radius:50%;background:var(--garnet);border:1.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:900;color:#fff;cursor:pointer;transform:translate(-50%,-50%);transition:transform .1s,box-shadow .1s;z-index:10;user-select:none;line-height:1;}
 .ap-marker:hover{transform:translate(-50%,-50%) scale(1.35);box-shadow:0 0 0 3px rgba(255,255,255,0.5);z-index:20;}
+.ap-marker.dragging{transform:translate(-50%,-50%) scale(1.2);box-shadow:0 0 0 4px rgba(255,255,255,0.7);z-index:30;}
 .ap-marker.removed{background:#000;border-color:#fff;}
 .ap-marker.unassigned{background:#73000A;border-color:#fff;}
 .ap-marker.hl{transform:translate(-50%,-50%) scale(1.4);box-shadow:0 0 0 4px #fff;z-index:20;}
+.annotation{position:absolute;left:0;top:0;border:2px solid var(--garnet);background:rgba(115,0,10,0.09);color:#000;z-index:8;cursor:pointer;user-select:none;transform:translate(-50%,-50%);box-shadow:0 2px 8px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;font-weight:800;line-height:1.2;padding:6px;overflow:hidden;}
+.annotation.text{min-width:84px;min-height:30px;background:#fff;border-color:var(--garnet);padding:6px 8px;font-size:12px;font-weight:800;line-height:1.2;}
+.annotation.circle{border-radius:50%;background:rgba(115,0,10,0.08);}
+.annotation.square,.annotation.rectangle{background:rgba(255,255,255,0.22);}
+.annotation.dragging{box-shadow:0 0 0 4px rgba(255,255,255,0.7);z-index:31;}
 .tooltip{position:fixed;background:#000;border:1px solid var(--garnet);border-top:3px solid var(--garnet);border-radius:4px;padding:11px 13px;font-size:0.78rem;min-width:210px;max-width:270px;z-index:1000;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,0.8);display:none;}
 .tooltip.vis{display:block;}
 .tt-title{font-size:0.92rem;font-weight:700;color:var(--garnet);margin-bottom:7px;padding-bottom:6px;border-bottom:1px solid #222;}
@@ -61,13 +70,14 @@ body{background:#000;color:#fff;font-family:'Helvetica Neue',Helvetica,Arial,san
 .tt-badge{display:inline-block;padding:1px 7px;border-radius:10px;font-size:0.66rem;font-weight:700;margin-top:5px;}
 .badge-rem{background:#111;color:#888;border:1px solid #444;}
 .badge-unassigned{background:rgba(115,0,10,0.25);color:#ff9999;border:1px solid var(--garnet);}
-.edit-panel{position:fixed;bottom:20px;right:20px;background:#000;border:1px solid var(--garnet);border-top:3px solid var(--garnet);border-radius:5px;padding:14px;width:240px;box-shadow:0 8px 28px rgba(0,0,0,0.9);display:none;z-index:500;}
+.edit-panel{position:fixed;bottom:20px;right:20px;background:#000;border:1px solid var(--garnet);border-top:3px solid var(--garnet);border-radius:5px;padding:14px;width:260px;box-shadow:0 8px 28px rgba(0,0,0,0.9);display:none;z-index:500;}
 .edit-panel.vis{display:block;}
 .ep-title{font-size:0.82rem;font-weight:700;color:var(--garnet);margin-bottom:10px;}
 .ep-field{margin-bottom:8px;}
 .ep-field label{display:block;font-size:0.68rem;color:#666;margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em;}
-.ep-field input,.ep-field select{width:100%;padding:5px 8px;background:#111;border:1px solid #333;border-radius:3px;color:#fff;font-size:0.8rem;}
-.ep-field input:focus,.ep-field select:focus{outline:none;border-color:var(--garnet);}
+.ep-field input,.ep-field select,.ep-field textarea{width:100%;padding:5px 8px;background:#111;border:1px solid #333;border-radius:3px;color:#fff;font-size:0.8rem;}
+.ep-field textarea{min-height:58px;resize:vertical;}
+.ep-field input:focus,.ep-field select:focus,.ep-field textarea:focus{outline:none;border-color:var(--garnet);}
 .ep-btns{display:flex;gap:5px;margin-top:10px;}
 .epbtn{flex:1;padding:6px;border-radius:3px;font-size:0.75rem;font-weight:600;cursor:pointer;border:none;}
 .epbtn.save{background:var(--garnet);color:#fff;}
@@ -91,10 +101,16 @@ body{background:#000;color:#fff;font-family:'Helvetica Neue',Helvetica,Arial,san
 
 <div class="header">
   <div class="header-logo">Strom Thurmond W&amp;FC <small>AP Floor Map · Telcom Inc</small></div>
+  <a class="nav-btn" href="index.html">Home</a>
+  <button class="nav-btn" type="button" onclick="goBack()">Back</button>
   <div class="header-controls">
     <button class="hbtn" id="searchToggleBtn" onclick="toggleSearch()">🔍 Search</button>
     <button class="hbtn" id="editModeBtn" onclick="toggleEditMode()">✏️ Edit Mode</button>
     <button class="hbtn" id="addApBtn" onclick="toggleAddMode()" style="display:none">+ Add AP</button>
+    <button class="hbtn tool-btn" id="addTextBtn" onclick="toggleAnnotationTool('text')" style="display:none">Text</button>
+    <button class="hbtn tool-btn" id="addCircleBtn" onclick="toggleAnnotationTool('circle')" style="display:none">Circle</button>
+    <button class="hbtn tool-btn" id="addSquareBtn" onclick="toggleAnnotationTool('square')" style="display:none">Square</button>
+    <button class="hbtn tool-btn" id="addRectangleBtn" onclick="toggleAnnotationTool('rectangle')" style="display:none">Rectangle</button>
     <button class="hbtn" id="saveBtn" onclick="saveState()" style="display:none">💾 Save</button>
   </div>
 </div>
@@ -139,6 +155,25 @@ body{background:#000;color:#fff;font-family:'Helvetica Neue',Helvetica,Arial,san
     <button class="epbtn can" onclick="closeEdit()">Cancel</button>
   </div>
 </div>
+<div class="edit-panel" id="annotationPanel">
+  <div class="ep-title" id="annTitle">Edit Annotation</div>
+  <div class="ep-field"><label>Text</label><textarea id="annText" placeholder="Type label or note"></textarea></div>
+  <div class="ep-field"><label>Shape</label>
+    <select id="annType">
+      <option value="text">Text Box</option>
+      <option value="circle">Circle</option>
+      <option value="square">Square</option>
+      <option value="rectangle">Rectangle</option>
+    </select>
+  </div>
+  <div class="ep-field"><label>Width</label><input type="number" id="annWidth" min="20" max="600"></div>
+  <div class="ep-field"><label>Height</label><input type="number" id="annHeight" min="20" max="400"></div>
+  <div class="ep-btns">
+    <button class="epbtn save" onclick="saveAnnotationEdit()">Save</button>
+    <button class="epbtn del" onclick="deleteAnnotation()">Delete</button>
+    <button class="epbtn can" onclick="closeAnnotationEdit()">Cancel</button>
+  </div>
+</div>
 <div class="zoom-ctrls">
   <button class="zbtn" onclick="zoom(0.25)" title="Zoom in">+</button>
   <div class="zlbl" id="zoomLbl">100%</div>
@@ -154,11 +189,11 @@ const AP_DATA={"1":{"ap_num":1,"floor":"1st","model":"C9120AXI-635","mac":"44:12
 const FLOOR_LABELS={"1":"Floor 1 (Ground)","2":"Floor 2","3":"Floor 3","4":"Floor 4 (Outdoor Pool)"};
 const STORAGE_KEY='sth_ap_v3';
 
-let state={markers:{},nextId:1,editMode:false,addMode:false,zoom:1,selId:null,editingId:null};
+let state={markers:{},annotations:{},nextId:1,nextAnnotationId:1,editMode:false,addMode:false,activeTool:null,zoom:1,selId:null,editingId:null,editingAnnotationId:null,dragging:null};
 
 function initState(){
   const saved=localStorage.getItem(STORAGE_KEY);
-  if(saved){try{const s=JSON.parse(saved);state.markers=s.markers||{};state.nextId=s.nextId||1;return;}catch(e){}}
+  if(saved){try{const s=JSON.parse(saved);state.markers=s.markers||{};state.annotations=s.annotations||{};state.nextId=s.nextId||1;state.nextAnnotationId=s.nextAnnotationId||1;return;}catch(e){}}
   let id=1;
   for(const[floor,pts]of Object.entries(FLOOR_POSITIONS)){
     for(const pt of pts){
@@ -170,7 +205,7 @@ function initState(){
 }
 
 function saveState(){
-  localStorage.setItem(STORAGE_KEY,JSON.stringify({markers:state.markers,nextId:state.nextId}));
+  localStorage.setItem(STORAGE_KEY,JSON.stringify({markers:state.markers,annotations:state.annotations,nextId:state.nextId,nextAnnotationId:state.nextAnnotationId}));
   const b=document.getElementById('saveBtn');
   b.textContent='✓ Saved';setTimeout(()=>b.textContent='💾 Save',1500);
 }
@@ -191,18 +226,25 @@ function renderFloors(){
     wrap.className='floor-plan-wrap';wrap.id='wrap-'+fl;
     const img=document.createElement('img');
     img.src=FLOOR_IMAGES[flStr];img.style.width='900px';img.draggable=false;
-    img.onload=()=>placeMarkers(fl);
+    img.onload=()=>placeFloorItems(fl);
     wrap.appendChild(img);
-    if(img.complete)placeMarkers(fl);sec.appendChild(wrap);c.appendChild(sec);
+    sec.appendChild(wrap);c.appendChild(sec);
+    if(img.complete)placeFloorItems(fl);
     wrap.addEventListener('click',(e)=>{
-      if(!state.addMode)return;
+      if(!state.editMode||!state.activeTool)return;
       const r=img.getBoundingClientRect();
       const px=((e.clientX-r.left)/r.width)*100;
       const py=((e.clientY-r.top)/r.height)*100;
-      addMarker(fl,px,py);
+      if(state.activeTool==='ap')addMarker(fl,px,py);
+      else addAnnotation(fl,px,py,state.activeTool);
     });
   }
   applyZoom();
+}
+
+function placeFloorItems(fl){
+  placeMarkers(fl);
+  placeAnnotations(fl);
 }
 
 function placeMarkers(fl){
@@ -213,6 +255,7 @@ function placeMarkers(fl){
     const el=document.createElement('div');
     el.className='ap-marker'+(m.removed?' removed':(m.ap_num===null?' unassigned':''));
     el.id='marker-'+id;
+    el.dataset.markerId=id;
     el.style.left=m.px+'%';el.style.top=m.py+'%';
     const numStr=m.ap_num!==null?String(m.ap_num):'?';
     const fs=numStr.length>=3?'5.5px':'7px';
@@ -220,7 +263,28 @@ function placeMarkers(fl){
     el.innerHTML=m.removed?'<span style="font-size:12px;font-weight:900;color:#fff">✕</span>':numStr;
     el.addEventListener('mouseenter',e=>showTooltip(e,id));
     el.addEventListener('mouseleave',hideTooltip);
-    el.addEventListener('click',e=>{e.stopPropagation();markerClick(id);});
+    el.addEventListener('pointerdown',e=>startMarkerPointer(e,id));
+    wrap.appendChild(el);
+  }
+}
+
+function placeAnnotations(fl){
+  const wrap=document.getElementById('wrap-'+fl);if(!wrap)return;
+  wrap.querySelectorAll('.annotation').forEach(a=>a.remove());
+  for(const[id,a]of Object.entries(state.annotations||{})){
+    if(a.floor!==fl)continue;
+    const type=a.type||'text';
+    const el=document.createElement('div');
+    const size=defaultAnnotationSize(type);
+    el.className='annotation '+type;
+    el.id='annotation-'+id;
+    el.dataset.annotationId=id;
+    el.style.left=a.px+'%';el.style.top=a.py+'%';
+    el.style.width=(a.width||size.width)+'px';
+    el.style.height=(a.height||size.height)+'px';
+    el.textContent=a.text||(type==='text'?'Text':'');
+    el.title=a.text||type;
+    el.addEventListener('pointerdown',e=>startAnnotationPointer(e,id));
     wrap.appendChild(el);
   }
 }
@@ -288,6 +352,78 @@ document.addEventListener('mousemove',e=>{
 });
 
 // ── EDIT MODE ──
+function defaultAnnotationSize(type){
+  if(type==='circle')return{width:58,height:58};
+  if(type==='square')return{width:58,height:58};
+  if(type==='rectangle')return{width:140,height:58};
+  return{width:130,height:42};
+}
+function clamp(value,min,max){return Math.min(max,Math.max(min,value));}
+function clientToPlanPercent(floor,clientX,clientY){
+  const wrap=document.getElementById('wrap-'+floor);
+  const img=wrap?wrap.querySelector('img'):null;
+  if(!img)return{px:50,py:50};
+  const r=img.getBoundingClientRect();
+  return{px:clamp(((clientX-r.left)/r.width)*100,0,100),py:clamp(((clientY-r.top)/r.height)*100,0,100)};
+}
+function updateToolUi(){
+  document.querySelectorAll('.tool-btn').forEach(btn=>btn.classList.remove('active'));
+  document.getElementById('addApBtn').classList.toggle('active',state.activeTool==='ap');
+  const idMap={text:'addTextBtn',circle:'addCircleBtn',square:'addSquareBtn',rectangle:'addRectangleBtn'};
+  if(idMap[state.activeTool])document.getElementById(idMap[state.activeTool]).classList.add('active');
+  document.querySelectorAll('.floor-plan-wrap').forEach(w=>w.classList.toggle('adding',state.editMode&&!!state.activeTool));
+  const banner=document.getElementById('addBanner');
+  if(state.editMode&&state.activeTool){
+    banner.textContent=state.activeTool==='ap'?'Click on any floor plan to place a new AP marker':`Click on any floor plan to place a ${state.activeTool==='text'?'text box':state.activeTool}`;
+    banner.classList.add('vis');
+  }else banner.classList.remove('vis');
+}
+function setActiveTool(tool){
+  state.activeTool=state.activeTool===tool?null:tool;
+  state.addMode=state.activeTool==='ap';
+  closeEdit();closeAnnotationEdit();
+  updateToolUi();
+}
+function startMarkerPointer(e,id){
+  e.stopPropagation();
+  if(!state.editMode){markerClick(id);return;}
+  hideTooltip();
+  const m=state.markers[id];if(!m)return;
+  state.dragging={kind:'marker',id,floor:m.floor,startX:e.clientX,startY:e.clientY,moved:false};
+  e.currentTarget.classList.add('dragging');
+  document.addEventListener('pointermove',dragMove);
+  document.addEventListener('pointerup',dragEnd,{once:true});
+}
+function startAnnotationPointer(e,id){
+  e.stopPropagation();
+  if(!state.editMode)return;
+  const a=state.annotations[id];if(!a)return;
+  state.dragging={kind:'annotation',id,floor:a.floor,startX:e.clientX,startY:e.clientY,moved:false};
+  e.currentTarget.classList.add('dragging');
+  document.addEventListener('pointermove',dragMove);
+  document.addEventListener('pointerup',dragEnd,{once:true});
+}
+function dragMove(e){
+  const d=state.dragging;if(!d)return;
+  if(Math.abs(e.clientX-d.startX)>2||Math.abs(e.clientY-d.startY)>2)d.moved=true;
+  const pos=clientToPlanPercent(d.floor,e.clientX,e.clientY);
+  const item=d.kind==='marker'?state.markers[d.id]:state.annotations[d.id];
+  if(!item)return;
+  item.px=pos.px;item.py=pos.py;
+  const el=document.getElementById((d.kind==='marker'?'marker-':'annotation-')+d.id);
+  if(el){el.style.left=pos.px+'%';el.style.top=pos.py+'%';}
+}
+function dragEnd(){
+  const d=state.dragging;if(!d)return;
+  document.removeEventListener('pointermove',dragMove);
+  const el=document.getElementById((d.kind==='marker'?'marker-':'annotation-')+d.id);
+  if(el)el.classList.remove('dragging');
+  if(d.moved)saveState();
+  else if(d.kind==='marker')openEdit(d.id);
+  else openAnnotationEdit(d.id);
+  state.dragging=null;
+}
+
 function toggleEditMode(){
   state.editMode=!state.editMode;
   const btn=document.getElementById('editModeBtn');
@@ -310,6 +446,7 @@ function openEdit(id){
   document.getElementById('epNum').value=m.ap_num!==null?m.ap_num:'';
   document.getElementById('epRemoved').value=String(m.removed);
   document.getElementById('editPanel').classList.add('vis');
+  setTimeout(()=>{const input=document.getElementById('epNum');input.focus();if(m.ap_num===null)input.select();},50);
 }
 function closeEdit(){state.editingId=null;document.getElementById('editPanel').classList.remove('vis');}
 function saveEdit(){
@@ -333,6 +470,61 @@ function addMarker(floor,px,py){
 }
 
 // ── ZOOM ──
+function addAnnotation(floor,px,py,type){
+  const id=state.nextAnnotationId++;
+  const size=defaultAnnotationSize(type);
+  state.annotations[id]={id,floor,px,py,type,width:size.width,height:size.height,text:type==='text'?'Text':''};
+  placeAnnotations(floor);openAnnotationEdit(id);saveState();
+}
+function openAnnotationEdit(id){
+  const a=state.annotations[id];if(!a)return;
+  state.editingAnnotationId=id;
+  document.getElementById('annTitle').textContent='Edit '+(a.type==='text'?'Text Box':a.type);
+  document.getElementById('annText').value=a.text||'';
+  document.getElementById('annType').value=a.type||'text';
+  document.getElementById('annWidth').value=a.width||defaultAnnotationSize(a.type).width;
+  document.getElementById('annHeight').value=a.height||defaultAnnotationSize(a.type).height;
+  document.getElementById('annotationPanel').classList.add('vis');
+  setTimeout(()=>{const input=document.getElementById('annText');input.focus();if(!(a.text||'').trim())input.select();},50);
+}
+function closeAnnotationEdit(){
+  state.editingAnnotationId=null;
+  const panel=document.getElementById('annotationPanel');
+  if(panel)panel.classList.remove('vis');
+}
+function saveAnnotationEdit(){
+  const id=state.editingAnnotationId;if(!state.annotations[id])return;
+  const a=state.annotations[id];
+  const type=document.getElementById('annType').value;
+  a.type=type;
+  a.text=document.getElementById('annText').value.trim();
+  a.width=clamp(parseInt(document.getElementById('annWidth').value,10)||defaultAnnotationSize(type).width,20,600);
+  a.height=clamp(parseInt(document.getElementById('annHeight').value,10)||defaultAnnotationSize(type).height,20,400);
+  closeAnnotationEdit();placeAnnotations(a.floor);saveState();
+}
+function deleteAnnotation(){
+  const id=state.editingAnnotationId;if(!state.annotations[id])return;
+  if(!confirm('Delete this annotation?'))return;
+  const floor=state.annotations[id].floor;
+  delete state.annotations[id];
+  closeAnnotationEdit();placeAnnotations(floor);saveState();
+}
+function goBack(){
+  if(history.length>1)history.back();
+  else window.location.href='index.html';
+}
+function toggleEditMode(){
+  state.editMode=!state.editMode;
+  const btn=document.getElementById('editModeBtn');
+  btn.classList.toggle('active',state.editMode);
+  btn.textContent=state.editMode?'Exit Edit':'Edit Mode';
+  ['addApBtn','addTextBtn','addCircleBtn','addSquareBtn','addRectangleBtn','saveBtn'].forEach(id=>document.getElementById(id).style.display=state.editMode?'block':'none');
+  if(!state.editMode){state.addMode=false;state.activeTool=null;closeEdit();closeAnnotationEdit();}
+  updateToolUi();
+}
+function toggleAddMode(){setActiveTool('ap');}
+function toggleAnnotationTool(type){setActiveTool(type);}
+
 function zoom(d){state.zoom=Math.min(3,Math.max(0.25,state.zoom+d));applyZoom();}
 function resetZoom(){state.zoom=1;applyZoom();}
 let mapRotation=0;

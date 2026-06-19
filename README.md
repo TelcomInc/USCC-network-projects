@@ -46,6 +46,7 @@ It includes:
 - semantic mapping for custom labels,
 - interactive map workspace with 500x zoom,
 - sample automatic marker placement,
+- client URL slug checker and prototype reservation flow,
 - template manifest export.
 
 Future client template URLs should follow:
@@ -53,6 +54,8 @@ Future client template URLs should follow:
 ```text
 theirchoice.asbuilt.thnikers.com
 ```
+
+The current checker blocks obvious system/taken names such as `create` and `usc` and stores prototype reservations in browser storage. Production should move this to a shared Cloudflare D1/Worker reservation check before creating DNS, Pages custom domains, or Access destinations.
 
 ## Important Security Note
 

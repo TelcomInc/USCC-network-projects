@@ -362,6 +362,42 @@ tr:last-child td{border-bottom:none;}
         </div>
       </div>
       <div class="card" style="margin-top:14px;">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Access Rules + Client Invites</div>
+            <div class="card-sub">Plan who can reach this portal before Cloudflare Access policy automation is wired in.</div>
+          </div>
+          <div class="actions" style="margin:0;">
+            <button class="btn primary" id="saveAccessPolicy">Save Access List</button>
+            <button class="btn good" id="sendInvite">Prepare Invite Email</button>
+          </div>
+        </div>
+        <div class="section">
+          <div class="grid two">
+            <div>
+              <div class="form-grid">
+                <div class="field"><label for="allowedDomains">Allowed Email Domains</label><textarea id="allowedDomains" placeholder="sc.edu&#10;telcominc.com"></textarea><div class="hint">One domain per line. Production maps these to Cloudflare Access email-domain include rules.</div></div>
+                <div class="field"><label for="allowedPeople">Allowed People</label><textarea id="allowedPeople" placeholder="name@company.com&#10;reviewer@client.com"></textarea><div class="hint">One email per line. Production maps these to individual Access include rules.</div></div>
+                <div class="field"><label for="inviteEmail">Invite Recipient</label><input id="inviteEmail" type="email" placeholder="reviewer@client.com"></div>
+                <div class="field"><label for="inviteRole">Recipient Role</label><select id="inviteRole"><option>Client Reviewer</option><option>Telcom Project Manager</option><option>Installer / Field Tech</option><option>Warranty Contact</option><option>Owner Representative</option></select></div>
+                <div class="field full"><label for="inviteUrl">Portal Link</label><input id="inviteUrl"></div>
+                <div class="field full"><label for="inviteOverview">Simple Overview</label><textarea id="inviteOverview"></textarea></div>
+              </div>
+              <div class="actions" style="margin-top:12px;"><button class="btn ghost" id="copyInvite">Copy Invite Text</button><span class="hint" id="inviteStatus"></span></div>
+            </div>
+            <div>
+              <div class="notice info">Production automation should create or update Cloudflare Access policies from this list, then send the invite after the policy is active.</div>
+              <div class="table-wrap" style="margin-top:14px;">
+                <table>
+                  <thead><tr><th>Access Type</th><th>Current Prototype Values</th></tr></thead>
+                  <tbody id="accessPolicyPreview"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:14px;">
         <div class="card-head"><div><div class="card-title">Domain Automation</div><div class="card-sub">Recommended first version</div></div></div>
         <div class="section">
           <div class="notice good">For company-owned domains, the app can create client subdomains with Cloudflare DNS API records. For buying brand-new client domains, keep purchase and registrant contact confirmation in the Cloudflare dashboard until the business flow is locked down.</div>
@@ -431,6 +467,12 @@ const defaultState = {
   importRows:[],
   importColumns:[],
   selectedFields:["deviceNumber","deviceName","deviceType","brand","model","serial","mac","ip","closet","port","location","testResult"],
+  access:{
+    domains:["sc.edu","telcominc.com"],
+    people:[],
+    inviteUrl:"https://usc.asbuilt.thnikers.com",
+    overview:"You are being invited to the USC As-Built Workspace. This secure portal gives approved users access to project closeout information, marked floor plans, device schedules, cable test result references, warranty information, and packet download tools."
+  },
   projects:[
     {
       id:"strom",
@@ -462,9 +504,19 @@ let pendingPlanName = "";
 function loadState(){
   try{
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if(saved && Array.isArray(saved.projects)) return {...defaultState, ...saved};
+    if(saved && Array.isArray(saved.projects)) return normalizeState({...defaultState, ...saved});
   }catch(err){}
-  return structuredClone(defaultState);
+  return normalizeState(structuredClone(defaultState));
+}
+
+function normalizeState(nextState){
+  nextState.access = {
+    ...defaultState.access,
+    ...(nextState.access || {})
+  };
+  nextState.access.domains = Array.isArray(nextState.access.domains) ? nextState.access.domains : [];
+  nextState.access.people = Array.isArray(nextState.access.people) ? nextState.access.people : [];
+  return nextState;
 }
 
 function saveState(){
@@ -492,6 +544,7 @@ function go(page){
   if(page === "plans") renderPlans();
   if(page === "packet") renderPacket();
   if(page === "projects") renderProjects();
+  if(page === "cloudflare") renderCloudflare();
 }
 
 document.querySelectorAll(".tab").forEach(btn => btn.addEventListener("click", () => go(btn.dataset.page)));
@@ -504,6 +557,7 @@ function renderAll(){
   renderProjectSelects();
   renderPacketSections();
   renderImportPreview();
+  renderCloudflare();
 }
 
 function renderMetrics(){
@@ -878,12 +932,107 @@ function renderPacket(){
     </tbody></table></div>`;
 }
 
+function splitLines(value){
+  return String(value || "").split(/[\n,;]/).map(item => item.trim()).filter(Boolean);
+}
+
+function renderCloudflare(){
+  state.access = {...defaultState.access, ...(state.access || {})};
+  const domains = Array.isArray(state.access.domains) ? state.access.domains : [];
+  const people = Array.isArray(state.access.people) ? state.access.people : [];
+  document.getElementById("allowedDomains").value = domains.join("\n");
+  document.getElementById("allowedPeople").value = people.join("\n");
+  document.getElementById("inviteUrl").value = state.access.inviteUrl || defaultState.access.inviteUrl;
+  document.getElementById("inviteOverview").value = state.access.overview || defaultState.access.overview;
+  document.getElementById("accessPolicyPreview").innerHTML = `
+    <tr><td>Email domains</td><td>${domains.length ? domains.map(domain => `<span class="tag">${escapeHtml(domain)}</span>`).join(" ") : "<span class=\"hint\">None listed</span>"}</td></tr>
+    <tr><td>Individual people</td><td>${people.length ? people.map(email => `<span class="tag xlsx">${escapeHtml(email)}</span>`).join(" ") : "<span class=\"hint\">None listed</span>"}</td></tr>
+    <tr><td>Invite URL</td><td>${escapeHtml(state.access.inviteUrl || defaultState.access.inviteUrl)}</td></tr>`;
+}
+
+function saveAccessPolicy(){
+  state.access = {
+    domains:splitLines(document.getElementById("allowedDomains").value).map(domain => domain.replace(/^@/,"").toLowerCase()),
+    people:splitLines(document.getElementById("allowedPeople").value).map(email => email.toLowerCase()),
+    inviteUrl:document.getElementById("inviteUrl").value.trim() || defaultState.access.inviteUrl,
+    overview:document.getElementById("inviteOverview").value.trim() || defaultState.access.overview
+  };
+  saveState();
+  renderCloudflare();
+  setInviteStatus("Access list saved.");
+}
+
+function buildInviteText(){
+  saveAccessPolicy();
+  const project = currentProject();
+  const role = document.getElementById("inviteRole").value;
+  const url = state.access.inviteUrl || defaultState.access.inviteUrl;
+  const overview = state.access.overview || defaultState.access.overview;
+  return [
+    `Hello,`,
+    ``,
+    `You have been invited as ${role} for the ${project.name} as-built workspace.`,
+    ``,
+    overview,
+    ``,
+    `Open the portal here:`,
+    url,
+    ``,
+    `Simple instructions:`,
+    `1. Open the link above.`,
+    `2. Enter your approved email address when Cloudflare Access asks for it.`,
+    `3. Check your email for the login code.`,
+    `4. Use the portal to review project closeout information, marked layouts, device schedules, cable test result references, warranty information, and packet downloads.`,
+    ``,
+    `If your email is not approved yet, reply to this message and we will add it to the access list.`,
+    ``,
+    `Telcom Inc`
+  ].join("\n");
+}
+
+function setInviteStatus(message){
+  const el = document.getElementById("inviteStatus");
+  el.textContent = message;
+  setTimeout(() => { if(el.textContent === message) el.textContent = ""; }, 2500);
+}
+
+document.getElementById("saveAccessPolicy").addEventListener("click", saveAccessPolicy);
+document.getElementById("sendInvite").addEventListener("click", () => {
+  const recipient = document.getElementById("inviteEmail").value.trim();
+  const project = currentProject();
+  const subject = `${project.name} as-built workspace access`;
+  const body = buildInviteText();
+  window.location.href = `mailto:${encodeURIComponent(recipient)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  setInviteStatus("Invite email prepared.");
+});
+document.getElementById("copyInvite").addEventListener("click", async () => {
+  const body = buildInviteText();
+  try{
+    await navigator.clipboard.writeText(body);
+    setInviteStatus("Invite text copied.");
+  }catch(_error){
+    setInviteStatus("Copy failed. Use Prepare Invite Email.");
+  }
+});
+["allowedDomains","allowedPeople","inviteUrl","inviteOverview"].forEach(id => {
+  document.getElementById(id).addEventListener("input", () => {
+    state.access = {
+      domains:splitLines(document.getElementById("allowedDomains").value),
+      people:splitLines(document.getElementById("allowedPeople").value),
+      inviteUrl:document.getElementById("inviteUrl").value.trim(),
+      overview:document.getElementById("inviteOverview").value.trim()
+    };
+    renderCloudflare();
+  });
+});
+
 document.getElementById("downloadManifest").addEventListener("click", () => {
   const project = currentProject();
   const manifest = {
     generatedAt: new Date().toISOString(),
     project,
     selectedFields: state.selectedFields,
+    cloudflareAccessPlan: state.access,
     note:"Prototype manifest. Production should render PDF/DOCX and include original attachments from R2."
   };
   downloadBlob(`${slug(project.name)}-packet-manifest.json`, JSON.stringify(manifest,null,2), "application/json");

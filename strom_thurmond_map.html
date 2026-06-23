@@ -252,14 +252,14 @@ async function loadSharedState(){
   try{
     const res=await fetch(`${MAP_STATE_API}?key=${encodeURIComponent(MAP_STATE_KEY)}`,{headers:{'accept':'application/json'}});
     const contentType=res.headers.get('content-type')||'';
-    if(res.status===404&&contentType.includes('application/json')){setSyncStatus('Shared DB empty','warn');return;}
+    if(res.status===404&&contentType.includes('application/json')){setSyncStatus('Shared empty','warn');return;}
     if(!res.ok)throw new Error('Shared map unavailable');
     const body=await res.json();
     if(body&&body.data&&applyMapPayload(body.data)){
       localStorage.setItem(STORAGE_KEY,JSON.stringify(mapPayload()));
       renderAll();
-      setSyncStatus('Shared DB loaded','ok');
-    }else setSyncStatus('Shared DB empty','warn');
+      setSyncStatus('Shared loaded','ok');
+    }else setSyncStatus('Shared empty','warn');
   }catch(_error){
     setSyncStatus('Local cache only','warn');
   }
@@ -273,7 +273,7 @@ async function saveSharedState(payload){
       body:JSON.stringify({key:MAP_STATE_KEY,data:payload})
     });
     if(!res.ok)throw new Error('Shared save failed');
-    setSyncStatus('Shared DB saved','ok');
+    setSyncStatus('Shared saved','ok');
     return true;
   }catch(_error){
     setSyncStatus('Local cache only','bad');
